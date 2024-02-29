@@ -1,0 +1,2 @@
+class TOTPRequested(Exception):
+    pass
