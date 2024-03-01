@@ -10,9 +10,12 @@ async def test_auth():
     authenticator = dnevnik.PlayWrightAuthenticator(login, password, headless=False, totp=totp)
     await authenticator.init()
     await authenticator.authenticate()
-    print(await authenticator.get_student_id())
-    print(await authenticator.get_token())
     await authenticator.close()
+
+    client = dnevnik.Client(authenticator)
+    schedule = await client.get_schedule()
+    print(schedule)
+
     await authenticator.save("auth.json")
 
 

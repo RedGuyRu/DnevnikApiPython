@@ -57,6 +57,8 @@ class PlayWrightAuthenticator(Authenticator):
         return self._token
 
     async def close(self) -> None:
+        for context in self._browser.contexts:
+            await context.close()
         await self._browser.close()
         self._browser = None
 
