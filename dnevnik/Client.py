@@ -7,15 +7,16 @@ import pytz
 
 
 class Client:
-
     _authenticator: Authenticator
 
     def __init__(self, authenticator: Authenticator):
         self._authenticator = authenticator
 
-    async def get_profile(self, with_groups=False,with_parents=False,with_assignments=False,with_ec_attendances=False,with_ae_attendances=False,
-                         with_home_based_periods=False,with_lesson_comments=False,with_attendances=False,with_final_marks=False,
-                            with_marks=False,with_subjects=False,with_lesson_info=False):
+    async def get_profile(self, with_groups=False, with_parents=False, with_assignments=False,
+                          with_ec_attendances=False, with_ae_attendances=False,
+                          with_home_based_periods=False, with_lesson_comments=False, with_attendances=False,
+                          with_final_marks=False,
+                          with_marks=False, with_subjects=False, with_lesson_info=False):
         options = {
             "with_groups": with_groups,
             "with_parents": with_parents,
@@ -37,43 +38,62 @@ class Client:
                 query += key + "=true&"
 
         async with aiohttp.ClientSession() as session:
-            async with await session.get("https://dnevnik.mos.ru/core/api/student_profiles/" + str(await self._authenticator.get_student_id()) + "?" + query[:-1], headers={
-                                    "Auth-Token": await self._authenticator.get_token(),
+            async with await session.get("https://dnevnik.mos.ru/core/api/student_profiles/" + str(
+                    await self._authenticator.get_student_id()) + "?" + query[:-1], headers={
+                "Auth-Token": await self._authenticator.get_token(),
                 "Profile-Id": await self._authenticator.get_student_id()
             }) as response:
                 res = await response.json()
 
-                res["created_at"] = None if res["created_at"] is None else datetime.strptime(res["created_at"], "dd.MM.yyyy HH:mm")
-                res["updated_at"] = None if res["updated_at"] is None else datetime.strptime(res["updated_at"], "dd.MM.yyyy HH:mm")
-                res["deleted_at"] = None if res["deleted_at"] is None else datetime.strptime(res["deleted_at"], "dd.MM.yyyy HH:mm")
-                res["birth_date"] = None if res["birth_date"] is None else datetime.strptime(res["birth_date"], "dd.MM.yyyy")
-                res["left_on"] = None if res["left_on"] is None else datetime.strptime(res["left_on"], "dd.MM.yyyy")
-                res["enlisted_on"] = None if res["enlisted_on"] is None else datetime.strptime(res["enlisted_on"], "dd.MM.yyyy")
-                res["migration_date"] = None if res["migration_date"] is None else datetime.strptime(res["migration_date"], "dd.MM.yyyy")
-                res["last_sign_in_at"] = None if res["last_sign_in_at"] is None else datetime.strptime(res["last_sign_in_at"], "dd.MM.yyyy HH:mm")
-                res["left_on_registry"] = None if res["left_on_registry"] is None else datetime.strptime(res["left_on_registry"], "dd.MM.yyyy")
+                res["created_at"] = None if "created_at" not in res else datetime.strptime(res["created_at"],
+                                                                                           "%d.%m.%Y %H:%M")
+                res["updated_at"] = None if "updated_at" not in res else datetime.strptime(res["updated_at"],
+                                                                                           "%d.%m.%Y %H:%M")
+                res["deleted_at"] = None if "deleted_at" not in res else datetime.strptime(res["deleted_at"],
+                                                                                           "%d.%m.%Y %H:%M")
+                res["birth_date"] = None if "birth_date" not in res else datetime.strptime(res["birth_date"],
+                                                                                           "%d.%m.%Y")
+
+                res["left_on"] = None if "left_on" not in res else datetime.strptime(res["left_on"], "%d.%m.%Y")
+                res["enlisted_on"] = None if "enlisted_on" not in res else datetime.strptime(res["enlisted_on"],
+                                                                                             "%d.%m.%Y")
+                res["migration_date"] = None if "migration_date" not in res else datetime.strptime(
+                    res["migration_date"], "%d.%m.%Y")
+                res["last_sign_in_at"] = None if "last_sign_in_at" not in res else datetime.strptime(
+                    res["last_sign_in_at"], "%d.%m.%Y %H:%M")
+                res["left_on_registry"] = None if "left_on_registry" not in res else datetime.strptime(
+                    res["left_on_registry"], "%d.%m.%Y")
 
                 for parent in res["parents"]:
-                    parent["last_sign_in_at"] = None if parent["last_sign_in_at"] is None else datetime.strptime(parent["last_sign_in_at"], "dd.MM.yyyy HH:mm")
+                    parent["last_sign_in_at"] = None if "last_sign_in_at" not in parent else datetime.strptime(
+                        parent["last_sign_in_at"], "%d.%m.%Y %H:%M")
 
                 for group in res["groups"]:
-                    group["begin_date"] = None if group["begin_date"] is None else datetime.strptime(group["begin_date"], "dd.MM.yyyy")
-                    group["end_date"] = None if group["end_date"] is None else datetime.strptime(group["end_date"], "dd.MM.yyyy")
+                    group["begin_date"] = None if "begin_date" not in group else datetime.strptime(
+                        group["begin_date"], "%d.%m.%Y")
+                    group["end_date"] = None if "end_date" not in group else datetime.strptime(group["end_date"],
+                                                                                               "%d.%m.%Y")
 
                 for mark in res["marks"]:
-                    mark["date"] = None if mark["date"] is None else datetime.strptime(mark["date"], "dd.MM.yyyy")
-                    mark["point_date"] = None if mark["point_date"] is None else datetime.strptime(mark["point_date"], "dd.MM.yyyy")
+                    mark["date"] = None if "date" not in mark else datetime.strptime(mark["date"], "%d.%m.%Y")
+                    mark["point_date"] = None if "point_date" not in mark else datetime.strptime(mark["point_date"],
+                                                                                                 "%d.%m.%Y")
 
                 for final_mark in res["final_marks"]:
-                    final_mark["created_at"] = None if final_mark["created_at"] is None else datetime.strptime(final_mark["created_at"], "dd.MM.yyyy HH:mm")
-                    final_mark["updated_at"] = None if final_mark["updated_at"] is None else datetime.strptime(final_mark["updated_at"], "dd.MM.yyyy HH:mm")
-                    final_mark["deleted_at"] = None if final_mark["deleted_at"] is None else datetime.strptime(final_mark["deleted_at"], "dd.MM.yyyy HH:mm")
+                    final_mark["created_at"] = None if "created_at" not in final_mark else datetime.strptime(
+                        final_mark["created_at"], "%d.%m.%Y %H:%M")
+                    final_mark["updated_at"] = None if "updated_at" not in final_mark else datetime.strptime(
+                        final_mark["updated_at"], "%d.%m.%Y %H:%M")
+                    final_mark["deleted_at"] = None if "deleted_at" not in final_mark else datetime.strptime(
+                        final_mark["deleted_at"], "%d.%m.%Y %H:%M")
 
                 return res
 
     async def get_average_marks(self):
         async with aiohttp.ClientSession() as session:
-            async with session.get("https://dnevnik.mos.ru/reports/api/progress/json?academic_year_id=" + str((await self.get_current_academic_year())["id"]) + "&student_profile_id=" + str(await self._authenticator.get_student_id()),headers={
+            async with session.get("https://dnevnik.mos.ru/reports/api/progress/json?academic_year_id=" + str(
+                    (await self.get_current_academic_year())["id"]) + "&student_profile_id=" + str(
+                await self._authenticator.get_student_id()), headers={
                 "Auth-Token": await self._authenticator.get_token(),
                 "Profile-Id": await self._authenticator.get_student_id()
             }) as response:
@@ -84,7 +104,8 @@ class Client:
                         marks = []
                         for mark in period["marks"]:
                             marks.append({"mark": mark["values"][0]["five"], "weight": mark["weight"]})
-                        result.append({"name": lesson["subject_name"], "mark": Utils.average(Utils.parse_marks_with_weight(marks))})
+                        result.append({"name": lesson["subject_name"],
+                                       "mark": Utils.average(Utils.parse_marks_with_weight(marks))})
                 return result
 
     async def get_subjects(self, lessons=None):
@@ -92,7 +113,8 @@ class Client:
             lessons = []
         async with aiohttp.ClientSession() as session:
             async with session.get("https://dnevnik.mos.ru/core/api/subjects?ids=" + ",".join(lessons), headers={
-                                       "Cookie": "auth_token=" + await self._authenticator.get_token() + "; student_id=" + str(await self._authenticator.get_student_id()) + ";",
+                "Cookie": "auth_token=" + await self._authenticator.get_token() + "; student_id=" + str(
+                    await self._authenticator.get_student_id()) + ";",
                 "Auth-token": await self._authenticator.get_token(),
                 "Profile-Id": await self._authenticator.get_student_id()
             }) as response:
@@ -135,13 +157,13 @@ class Client:
             d['deleted_at'] = datetime.strptime(d['deleted_at'], '%d.%m.%Y %H:%M') if d['deleted_at'] else None
 
             d['homework_entry']['created_at'] = datetime.strptime(d['homework_entry']['created_at'],
-                                                                           '%d.%m.%Y %H:%M') if d['homework_entry'][
+                                                                  '%d.%m.%Y %H:%M') if d['homework_entry'][
                 'created_at'] else None
             d['homework_entry']['updated_at'] = datetime.strptime(d['homework_entry']['updated_at'],
-                                                                           '%d.%m.%Y %H:%M') if d['homework_entry'][
+                                                                  '%d.%m.%Y %H:%M') if d['homework_entry'][
                 'updated_at'] else None
             d['homework_entry']['deleted_at'] = datetime.strptime(d['homework_entry']['deleted_at'],
-                                                                           '%d.%m.%Y %H:%M') if d['homework_entry'][
+                                                                  '%d.%m.%Y %H:%M') if d['homework_entry'][
                 'deleted_at'] else None
 
             d['homework_entry']['homework']['created_at'] = datetime.strptime(
@@ -577,6 +599,23 @@ class Client:
                 report = await response.json()
 
         return report
+
+    async def get_school_info(self):
+        profile = await self.get_profile()
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    f"https://school.mos.ru/api/family/web/v1/school_info?class_unit_id={profile['class_unit']['id']}&school_id={profile['school_id']}",
+                    headers={
+                        "Cookie": "auth_token=" + await self._authenticator.get_token() + "; student_id=" + str(
+                            await self._authenticator.get_student_id()) + ";",
+                        "Auth-Token": await self._authenticator.get_token(),
+                        "Profile-Id": await self._authenticator.get_student_id(),
+                        "authorization": await self._authenticator.get_token(),
+                        "profile-type": "student",
+                        "profile-id": await self._authenticator.get_student_id(),
+                        "x-mes-subsystem": "familyweb"
+                    }) as response:
+                return await response.json()
 
     @staticmethod
     async def get_academic_years():

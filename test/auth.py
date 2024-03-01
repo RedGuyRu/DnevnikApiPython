@@ -11,12 +11,11 @@ async def test_auth():
     await authenticator.init()
     await authenticator.authenticate()
     await authenticator.close()
+    await authenticator.save("auth.json")
 
     client = dnevnik.Client(authenticator)
-    schedule = await client.get_schedule()
+    schedule = await client.get_school_info()
     print(schedule)
-
-    await authenticator.save("auth.json")
 
 
 if __name__ == "__main__":

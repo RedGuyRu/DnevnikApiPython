@@ -5,7 +5,7 @@ setup(
     name="dnevnik-mos-ru-api",
     author="RedGuy",
     description="API for dnevnik.mos.ru",
-    version="1.2.7",
+    version="1.2.8",
     long_description=Path("README.md").read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
     license="MIT",

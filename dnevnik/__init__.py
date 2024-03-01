@@ -1,4 +1,4 @@
-__version__ = "1.2.7"
+__version__ = "1.2.8"
 
 from .Authenticator import Authenticator
 from .FileAuthenticator import FileAuthenticator
