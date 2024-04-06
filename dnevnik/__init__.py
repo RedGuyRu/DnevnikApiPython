@@ -7,4 +7,4 @@ from .PlayWrightAuthenticator import PlayWrightAuthenticator
 from .TOTPRequested import TOTPRequested
 from .IncorrectLoginPassword import IncorrectLoginPassword
 from .Utils import Utils
-from .Client import Client
+from .DnevnikClient import DnevnikClient

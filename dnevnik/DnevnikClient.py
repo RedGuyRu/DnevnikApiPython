@@ -6,7 +6,7 @@ import json
 import pytz
 
 
-class Client:
+class DnevnikClient:
     _authenticator: Authenticator
 
     def __init__(self, authenticator: Authenticator):
@@ -631,7 +631,7 @@ class Client:
 
     @staticmethod
     async def get_current_academic_year():
-        res = await Client.get_academic_years()
+        res = await DnevnikClient.get_academic_years()
         for year in res:
             if year['current_year']:
                 return year
