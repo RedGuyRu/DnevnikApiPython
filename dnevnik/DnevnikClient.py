@@ -89,6 +89,27 @@ class DnevnikClient:
 
                 return res
 
+    async def get_profile_v2(self):
+        async with aiohttp.ClientSession() as session:
+            async with await session.get("https://school.mos.ru/api/family/web/v1/profile/", headers={
+                "Auth-Token": await self._authenticator.get_token(),
+                "Profile-Id": await self._authenticator.get_student_id(),
+                "x-mes-subsystem": "familyweb"
+            }) as response:
+                res = await response.json()
+
+                if res["profile"] is None:
+                    res["profile"] = {}
+                res["profile"]["birth_date"] = datetime.strptime(res["profile"]["birth_date"], '%Y-%m-%d')
+
+                for child in res["children"]:
+                    child["birth_date"] = datetime.strptime(child["birth_date"], '%Y-%m-%d')
+                    child["enrollment_date"] = datetime.strptime(child["enrollment_date"], '%Y-%m-%d')
+
+                    for representative in child["representatives"]:
+                        representative["birth_date"] = datetime.strptime(representative["birth_date"], '%Y-%m-%d') if representative['birth_date'] else None
+                return res
+
     async def get_average_marks(self):
         async with aiohttp.ClientSession() as session:
             async with session.get("https://dnevnik.mos.ru/reports/api/progress/json?academic_year_id=" + str(
@@ -472,17 +493,27 @@ class DnevnikClient:
 
         return report
 
-    async def get_visits(self, from_date=datetime.now(), to_date=datetime.now()):
+    async def get_visits(self, from_date=datetime.now(), to_date=datetime.now(), use_v2_profile=True):
         from_date_str = from_date.astimezone(pytz.timezone('Europe/Moscow')).strftime("%Y-%m-%d")
         to_date_str = to_date.astimezone(pytz.timezone('Europe/Moscow')).strftime("%Y-%m-%d")
-        profile = await self.get_profile()
+        ispp = ""
+        if use_v2_profile:
+            profile = await self.get_profile_v2()
+            for child in profile["children"]:
+                if child["contract_id"] is not None:
+                    ispp = child["contract_id"]
+                    break
+        else:
+            profile = await self.get_profile()
+            ispp = profile['ispp_account']
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                    f"https://dnevnik.mos.ru/mobile/api/visits?from={from_date_str}&to={to_date_str}&contract_id={profile['ispp_account']}",
+                    f"https://school.mos.ru/api/family/web/v1/visits?from={from_date_str}&to={to_date_str}&contract_id={ispp}",
                     headers={
                         "Cookie": f"auth_token={await self._authenticator.get_token()}; student_id={await self._authenticator.get_student_id()};",
                         "Auth-Token": await self._authenticator.get_token(),
-                        "Profile-Id": await self._authenticator.get_student_id()
+                        "Profile-Id": await self._authenticator.get_student_id(),
+                "x-mes-subsystem": "familyweb"
                     }) as response:
                 report = await response.json()
 
