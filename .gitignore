@@ -4,3 +4,4 @@ dist
 dnevnik.mos.ru.egg-info
 dnevnik_mos_ru_api.egg-info
 test/auth.json
+__pycache__
